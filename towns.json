@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Tamu Main Shop",
+    "address": "Tamu, Sagaing, Near Market",
+    "phone": "09-123456789",
+    "phone2": "09-987654321",
+    "category": "Shop",
+    "date": "2026-10-09"
+  },
+  {
+    "id": 2,
+    "name": "Tamu Hospital",
+    "address": "Tamu, Sagaing, Main Road",
+    "phone": "09-111222333",
+    "phone2": "09-444555666",
+    "category": "Hospital",
+    "date": "2026-10-09"
+  }
+]
