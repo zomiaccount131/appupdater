@@ -1,7 +1,7 @@
 {
-  "version": "10.5",
-  "build": 105,
-  "note": "မြို့သစ်ထပ်တိုးထားတယ်",
-  "force": false,
-  "webUrl": "https://your-site.netlify.app"
+  "version": "11.0",
+  "build": 110,
+  "date": "2026-10-09",
+  "notes": "Card click shows 2 phones + address + map + AppUpdater added",
+  "forceUpdate": false
 }
