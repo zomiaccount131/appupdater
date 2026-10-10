@@ -1,0 +1,38 @@
+<!DOCTYPE html><html lang="my"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>Town Directory V11</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563EB">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/684/684908.png">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#F6F8FF;padding:12px;padding-bottom:80px}header{background:#2563EB;color:#fff;padding:16px;border-radius:16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}input{width:100%;padding:14px;border-radius:12px;border:1px solid #ddd;font-size:16px;margin-bottom:12px}select{padding:10px;border-radius:10px;border:1px solid #ddd;margin-bottom:12px}.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}.badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;color:#fff}.call{width:100%;padding:12px;background:#10B981;color:#fff;border:0;border-radius:10px;font-weight:800;margin-top:8px}.call2{background:#3B82F6;margin-top:6px}.ver{position:fixed;bottom:12px;left:12px;right:12px;background:#111827;color:#fff;padding:12px;border-radius:12px;text-align:center;font-size:12px;display:none}.ver.show{display:block}.ver button{margin-top:8px;background:#fff;color:#111827;border:0;padding:8px 16px;border-radius:8px;font-weight:800}</style></head><body>
+<header><div><b>📍 Town Directory</b><div style="font-size:11px;opacity:0.9">Tamu, Sagaing • V11</div></div><div id="count" style="background:#fff;color:#2563EB;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:800">0</div></header>
+<input id="search" placeholder="🔍 ရှာရန်... Town Name, Phone, Address" oninput="doSearch()">
+<select id="filter" onchange="doFilter()"><option value="All">All Categories</option><option>Shop</option><option>Hospital</option><option>School</option><option>Restaurant</option><option>Hotel</option><option>Other</option></select>
+<div id="list"></div>
+<div id="updateBar" class="ver"><div id="updateText">🔄 Update ရရှိ!</div><button onclick="doUpdate()">🔄 Update Now</button> <button onclick="closeUpdate()" style="background:transparent;color:#fff;border:1px solid #fff">Later</button></div>
+<script>
+const TOWNS_URL='https://raw.githubusercontent.com/zomiaccount131/appupdater/refs/heads/main/towns.json';
+const VERSION_URL='https://raw.githubusercontent.com/zomiaccount131/appupdater/refs/heads/main/version.json';
+const CURRENT_BUILD=110;
+let allTowns=[],filtered=[];
+async function loadData(){
+ try{
+  let r=await fetch(TOWNS_URL+'?t='+Date.now()); let d=await r.json(); allTowns=Array.isArray(d)?d:(d.towns||[]);
+ }catch(e){
+  try{let r2=await fetch('towns.json?t='+Date.now());let d2=await r2.json();allTowns=Array.isArray(d2)?d2:(d2.towns||[]);}catch(e2){allTowns=[];}
+ }
+ filtered=[...allTowns]; render(); checkUpdate();
+}
+function getCatColor(c){return {Shop:'#10B981',Hospital:'#EF4444',School:'#F59E0B',Restaurant:'#8B5CF6',Hotel:'#06B6D4',Other:'#64748B'}[c]||'#64748B'}
+function render(){
+ count.innerText=allTowns.length;
+ if(!filtered.length){list.innerHTML='<div style="text-align:center;padding:40px;color:#64748B">မတွေ့ပါ</div>';return;}
+ list.innerHTML=filtered.map(t=>`<div class="card"><div style="display:flex;justify-content:space-between;align-items:start"><b>${t.name}</b><span class="badge" style="background:${getCatColor(t.category)}">${t.category||'Other'}</span></div><div style="font-size:13px;color:#64748B;margin-top:4px">📍 ${t.address||'-'}</div>${t.phone?`<button class="call" onclick="window.open('tel:${t.phone}')">📞 ${t.phone} - Call</button>`:''}${t.phone2?`<button class="call call2" onclick="window.open('tel:${t.phone2}')">📞 ${t.phone2} - Call 2</button>`:''}</div>`).join('');
+}
+function doSearch(){let q=search.value.toLowerCase();filtered=allTowns.filter(t=>(t.name+t.address+t.phone+(t.phone2||'')).toLowerCase().includes(q)); if(filter.value!=='All') filtered=filtered.filter(t=>t.category===filter.value); render();}
+function doFilter(){let c=filter.value;filtered=c==='All'?[...allTowns]:allTowns.filter(t=>t.category===c); if(search.value) {let q=search.value.toLowerCase(); filtered=filtered.filter(t=>(t.name+t.address+t.phone+(t.phone2||'')).toLowerCase().includes(q));} render();}
+async function checkUpdate(){try{let r=await fetch(VERSION_URL+'?t='+Date.now());let v=await r.json();let b=v.build||v.versionCode||0; if(b>CURRENT_BUILD){updateText.innerText=`🔄 Update V${v.version||b} ရရှိ! ${v.notes||''}`; updateBar.classList.add('show');}}catch(e){}}
+function doUpdate(){location.reload(true);} function closeUpdate(){updateBar.classList.remove('show');}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js');}
+loadData();
+</script></body></html>
