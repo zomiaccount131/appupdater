@@ -1,0 +1,26 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Auto Push Final</title>
+<style>body{padding:16px;background:#F6F8FF;font-family:sans-serif}input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin-top:8px}button{width:100%;padding:14px;background:#2563EB;color:#fff;border:0;border-radius:12px;font-weight:800;margin-top:12px}.info{background:#fff;padding:12px;border-radius:12px;margin-bottom:12px;border:2px solid #2563EB;font-size:13px}</style></head><body>
+<h3>📍 Admin Auto Push Final</h3>
+<div class="info">
+<span id="status">⏳ Loading...</span><br><br>
+<input id="tokenInput" placeholder="👉 ghp_... Token Paste" style="background:#FEF3C7;border:2px solid #F59E0B">
+<button onclick="saveToken()" style="background:#111827">🔑 Save Token in Phone</button>
+<div id="tokenStatus" style="font-size:12px;margin-top:8px;font-weight:700"></div>
+</div>
+<input id="name" placeholder="Town Name"><input id="addr" placeholder="Address"><input id="phone" placeholder="Phone 1"><input id="phone2" placeholder="Phone 2">
+<select id="cat"><option>Shop</option><option>Hospital</option><option>School</option><option>Restaurant</option><option>Hotel</option><option>Other</option></select>
+<button onclick="addAndPush()" id="addBtn">🚀 Add & Auto Push</button>
+<div id="log" style="margin-top:12px;font-size:13px;white-space:pre-wrap;background:#fff;padding:12px;border-radius:10px"></div>
+<div id="list" style="margin-top:16px"></div>
+<script>
+const TOWNS_URL='https://raw.githubusercontent.com/zomiaccount131/appupdater/refs/heads/main/towns.json';
+const VERSION_URL='https://raw.githubusercontent.com/zomiaccount131/appupdater/refs/heads/main/version.json';
+const REPO='zomiaccount131/appupdater'; let towns=[],currentBuild=110;
+function saveToken(){let v=tokenInput.value.trim();if(!v||!v.startsWith('ghp_'))return alert('Token မှားတယ်!');localStorage.setItem('gh_token',v);tokenInput.value='';checkToken();alert('✅ Saved!');}
+function checkToken(){let t=localStorage.getItem('gh_token');tokenStatus.innerHTML=t?`✅ Ready ${t.slice(0,13)}...`:'❌ No Token';tokenStatus.style.color=t?'green':'red';addBtn.disabled=!t;}
+async function load(){checkToken();try{let r=await fetch(TOWNS_URL+'?t='+Date.now());towns=await r.json();if(!Array.isArray(towns))towns=towns.towns||[];status.innerHTML=`✅ ${towns.length} towns`;}catch(e){status.innerHTML='Load fail';try{let r2=await fetch('towns.json?t='+Date.now());towns=await r2.json();if(!Array.isArray(towns))towns=towns.towns||[];}catch(e2){towns=[];}}try{let rv=await fetch(VERSION_URL+'?t='+Date.now());let v=await rv.json();currentBuild=v.build||110;}catch(e){}render();}
+function render(){list.innerHTML=towns.map(t=>`<div style="background:#fff;padding:10px;border-radius:10px;margin-top:8px"><b>${t.name}</b><br><span style="font-size:12px;color:#64748B">${t.address} • ${t.phone} ${t.phone2||''}</span></div>`).join('');}
+async function pushFile(fn,content,msg){let token=localStorage.getItem('gh_token');if(!token)throw'No Token';let url=`https://api.github.com/repos/${REPO}/contents/${fn}`;let sha=null;try{let r=await fetch(url,{headers:{Authorization:`Bearer ${token}`}});if(r.ok){let j=await r.json();sha=j.sha;}}catch(e){}let body={message:msg,content:btoa(unescape(encodeURIComponent(content)))};if(sha)body.sha=sha;let res=await fetch(url,{method:'PUT',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(body)});let j=await res.json();if(!res.ok)throw j.message;return true;}
+async function addAndPush(){if(!name.value)return alert('Name!');if(!localStorage.getItem('gh_token'))return alert('Save Token!');addBtn.innerText='⏳ Pushing...';addBtn.disabled=true;let t={id:Date.now(),name:name.value,address:addr.value,phone:phone.value,phone2:phone2.value,category:cat.value,date:new Date().toISOString().split('T')[0]};towns.push(t);let ver={version:"11.0",build:currentBuild+1,versionCode:currentBuild+1,versionName:"11.0",date:new Date().toISOString().split('T')[0],notes:`Added ${t.name}`,forceUpdate:false,url:"https://zomiaccount131.github.io/TownDirectory/"};try{await pushFile('towns.json',JSON.stringify(towns,null,2),`Add ${t.name}`);await pushFile('version.json',JSON.stringify(ver,null,2),`Bump ${currentBuild+1}`);log.innerHTML=`✅ ${t.name} Pushed! 1-2 min မှာ User မှာ Auto ပေါ်မယ်!`;currentBuild++;render();name.value='';addr.value='';phone.value='';phone2.value='';}catch(e){log.innerHTML=`❌ ${e}`;}addBtn.innerText='🚀 Add & Auto Push';addBtn.disabled=false;}
+load();
+</script></body></html>
